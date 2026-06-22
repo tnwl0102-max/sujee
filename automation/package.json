@@ -1,0 +1,12 @@
+{
+  "name": "caring-daily-report",
+  "version": "1.0.0",
+  "description": "충청본부 근무일정 Slack 자동 보고",
+  "main": "daily-report.js",
+  "scripts": {
+    "start": "node daily-report.js"
+  },
+  "dependencies": {
+    "playwright": "^1.52.0"
+  }
+}

@@ -1,0 +1,36 @@
+name: 충청본부 근무일정 Slack 보고
+
+on:
+  schedule:
+    # 매일 평일 오전 9시 KST (= 0시 UTC)
+    - cron: '0 0 * * 1-5'
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  daily-report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run daily report
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          CAREFOR_BASIC_USER: ${{ secrets.CAREFOR_BASIC_USER }}
+          CAREFOR_BASIC_PASS: ${{ secrets.CAREFOR_BASIC_PASS }}
+          CAREFOR_LOGIN_ID: ${{ secrets.CAREFOR_LOGIN_ID }}
+          CAREFOR_LOGIN_PASS: ${{ secrets.CAREFOR_LOGIN_PASS }}
+        run: node daily-report.js
