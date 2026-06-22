@@ -9,7 +9,7 @@ const CENTERS = [
 ];
 
 const SLACK_CHANNEL = 'C0BCYTSDZKJ';
-const SLACK_TOKEN = process.env.SLACK_BOT_TOKEN;
+const SLACK_TOKEN = (process.env.SLACK_BOT_TOKEN || '').trim();
 const CAREFOR_BASIC_USER = process.env.CAREFOR_BASIC_USER || 'caring';
 const CAREFOR_BASIC_PASS = process.env.CAREFOR_BASIC_PASS || 'zpdjfld2025072!';
 const CAREFOR_LOGIN_ID = process.env.CAREFOR_LOGIN_ID || '관리자';
