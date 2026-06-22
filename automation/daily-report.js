@@ -15,6 +15,9 @@ const CAREFOR_BASIC_PASS = process.env.CAREFOR_BASIC_PASS || 'zpdjfld2025072!';
 const CAREFOR_LOGIN_ID = process.env.CAREFOR_LOGIN_ID || '관리자';
 const CAREFOR_LOGIN_PASS = process.env.CAREFOR_LOGIN_PASS || 'zpdjfld1!';
 
+const GOOGLE_SHEET_ID = '1Ns2HzBXbK2nCQuPhpO49KSr7Oyo5f5OgGLz4hvnueP8';
+const GOOGLE_SHEET_GID = '1190101526';
+
 function getTodayInfo() {
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
   const y = now.getFullYear();
@@ -209,6 +212,82 @@ function formatThreadMessage(r) {
   return msg;
 }
 
+function fetchUrl(url) {
+  return new Promise((resolve, reject) => {
+    const mod = url.startsWith('https') ? https : require('http');
+    mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return fetchUrl(res.headers.location).then(resolve).catch(reject);
+      }
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => resolve(raw));
+    }).on('error', reject);
+  });
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQuotes = !inQuotes; }
+    else if (line[i] === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+    else { current += line[i]; }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+async function collectGoogleSheetData(todayInfo) {
+  const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=${GOOGLE_SHEET_GID}`;
+  console.log('  [방문요양대전점] 구글시트 수집 중...');
+  try {
+    const csv = await fetchUrl(url);
+    const rows = csv.split('\n').filter(r => r.trim());
+    const header = parseCSVLine(rows[0]);
+    const dayCol = header.indexOf(String(todayInfo.dayOfMonth));
+    if (dayCol === -1) {
+      console.error('  [방문요양대전점] 오늘 날짜 열을 찾을 수 없음');
+      return null;
+    }
+
+    const working = [], leave = [];
+    const staffData = [];
+    const leaveTypes = ['연차', '반차', '대체휴무', '대체휴일', '공가', '결근'];
+
+    for (let i = 1; i < rows.length; i++) {
+      const cols = parseCSVLine(rows[i]);
+      const name = cols[0];
+      if (!name) continue;
+
+      const role = cols[1] || '';
+      const stdHours = parseFloat(cols[2]) || 168;
+      const overtimeHours = parseFloat(cols[3]) || 0;
+      const isDriver = role.includes('운전사');
+      const todayVal = (cols[dayCol] || '').trim();
+
+      staffData.push({ name, role, workHours: stdHours + overtimeHours, isDriver, overtime: overtimeHours });
+
+      if (!todayVal) continue;
+      if (leaveTypes.some(t => todayVal.includes(t))) {
+        leave.push({ name, role, type: todayVal, time: '' });
+      } else {
+        working.push({ name, role, time: todayVal });
+      }
+    }
+
+    console.log(`  [방문요양대전점] 근무 ${working.length}명, 휴가 ${leave.length}명`);
+    return {
+      center: '방문요양대전점',
+      staffData,
+      dailyStaff: { working, leave },
+    };
+  } catch (e) {
+    console.error('  [방문요양대전점] Error:', e.message);
+    return null;
+  }
+}
+
 async function main() {
   if (!SLACK_TOKEN) {
     console.error('SLACK_BOT_TOKEN 환경변수가 설정되지 않았습니다.');
@@ -236,6 +315,9 @@ async function main() {
   }
 
   await browser.close();
+
+  const sheetData = await collectGoogleSheetData(todayInfo);
+  if (sheetData) results.push(sheetData);
 
   const mainMsg = formatMainMessage(todayInfo.dateDisplay, results);
   console.log('\nSlack 메인 메시지 전송 중...');
