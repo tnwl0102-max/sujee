@@ -8,7 +8,7 @@ const CENTERS = [
   { name: '청주점', code: '24311001003' },
 ];
 
-const SLACK_CHANNEL = 'C0BCYTSDZKJ';
+const SLACK_CHANNEL = 'C087JL55TA6';
 const SLACK_TOKEN = (process.env.SLACK_BOT_TOKEN || '').trim();
 const CAREFOR_BASIC_USER = process.env.CAREFOR_BASIC_USER || 'caring';
 const CAREFOR_BASIC_PASS = process.env.CAREFOR_BASIC_PASS || 'zpdjfld2025072!';
