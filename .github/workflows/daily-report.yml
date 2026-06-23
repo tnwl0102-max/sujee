@@ -2,7 +2,7 @@ name: 충청본부 근무일정 Slack 보고
 
 on:
   schedule:
-    # 월~토 오전 9시 KST (= 0시 UTC)
+    # 월~토 오전 9시 KST (= UTC 00:00)
     - cron: '0 0 * * 1-6'
   workflow_dispatch: # 수동 실행 가능
 
