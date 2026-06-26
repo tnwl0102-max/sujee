@@ -2,455 +2,695 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>테트리스</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>노션→슬랙 근무알림</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --card: #16213e;
+  --border: #1e3a5f;
+  --accent: #e94560;
+  --green: #16a34a;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --radius: 14px;
+}
 
 body {
-  background: #1a1a2e;
-  color: #eee;
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
   min-height: 100vh;
-  user-select: none;
-}
-
-.game-wrapper {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-
-canvas#board {
-  border: 3px solid #e94560;
-  border-radius: 4px;
-  background: #16213e;
-}
-
-.side-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-width: 140px;
-}
-
-.panel-box {
-  background: #16213e;
-  border: 2px solid #0f3460;
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-}
-
-.panel-box h3 {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: #e94560;
-  margin-bottom: 10px;
-}
-
-.panel-box .value {
-  font-size: 28px;
-  font-weight: bold;
-  color: #fff;
-}
-
-canvas#preview {
-  display: block;
+  padding: 16px 16px 48px;
+  max-width: 560px;
   margin: 0 auto;
-  background: #16213e;
 }
 
-.controls {
-  font-size: 12px;
-  color: #888;
-  line-height: 1.8;
+header {
+  text-align: center;
+  padding: 28px 0 20px;
+}
+header h1 { font-size: 20px; font-weight: 700; }
+header p { font-size: 13px; color: var(--muted); margin-top: 5px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
 }
 
-.controls kbd {
-  background: #0f3460;
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-family: inherit;
-  color: #ccc;
-}
-
-button#startBtn {
-  background: #e94560;
-  color: #fff;
-  border: none;
-  padding: 12px 0;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  transition: background 0.2s;
-}
-
-button#startBtn:hover { background: #c73e54; }
-
-.overlay {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+.card-header {
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: rgba(0,0,0,0.6);
-  font-size: 28px;
-  font-weight: bold;
-  color: #e94560;
-  pointer-events: none;
-  border-radius: 4px;
+  justify-content: space-between;
+  margin-bottom: 14px;
 }
 
-.board-container {
-  position: relative;
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.collapse-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+}
+
+.collapsible { overflow: hidden; transition: max-height 0.3s ease; }
+.collapsible.closed { max-height: 0 !important; }
+
+label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 5px;
+  margin-top: 12px;
+}
+label:first-of-type { margin-top: 0; }
+
+input[type="text"], input[type="password"], input[type="date"] {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 15px;
+  padding: 11px 13px;
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+input:focus { border-color: var(--accent); }
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+.row input { flex: 1; }
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: 11px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  -webkit-appearance: none;
+}
+.btn:active { opacity: 0.75; transform: scale(0.98); }
+.btn:disabled { opacity: 0.35; pointer-events: none; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-ghost {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  width: auto;
+}
+
+.status {
+  display: none;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border-radius: 9px;
+  margin-top: 10px;
+}
+.status.show { display: block; }
+.status.info { background: #1e3a5f; color: #7dd3fc; }
+.status.ok { background: #14532d; color: #86efac; }
+.status.err { background: #7f1d1d; color: #fca5a5; }
+.status.load { background: #1e293b; color: #94a3b8; }
+
+.spinner {
+  display: inline-block;
+  width: 13px; height: 13px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+.tab {
+  flex: 1; text-align: center; padding: 8px 4px;
+  font-size: 13px; font-weight: 500;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; color: var(--muted); cursor: pointer;
+}
+.tab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tab-pane { display: none; }
+.tab-pane.on { display: block; }
+
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  gap: 8px;
+}
+.list-item:last-child { border-bottom: none; }
+.item-name { font-size: 15px; font-weight: 500; }
+.item-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.item-badge {
+  font-size: 11px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.item-badge.leave { border-color: #92400e; color: #fbbf24; background: #1c1204; }
+
+.msg-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 340px;
+  overflow-y: auto;
+  color: #cbd5e1;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 0;
+  font-size: 14px;
+}
+
+.badge {
+  display: inline-block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1px 9px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.proxy-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border-left: 2px solid var(--border);
+}
+
+footer {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 </style>
 </head>
 <body>
 
-<div class="game-wrapper">
-  <div class="board-container">
-    <canvas id="board" width="300" height="600"></canvas>
-    <div class="overlay" id="overlay">PRESS START</div>
+<header>
+  <h1>📋 노션→슬랙 근무알림</h1>
+  <p>Notion 데이터베이스 → Slack 알림 (모바일 전용)</p>
+</header>
+
+<!-- 설정 -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">⚙️ API 설정</span>
+    <button class="collapse-btn" id="settingsToggle" onclick="toggleSettings()">접기</button>
   </div>
+  <div class="collapsible" id="settingsBody">
+    <label>Notion Integration Token</label>
+    <input type="password" id="notionToken" placeholder="secret_xxxx..." autocomplete="off" spellcheck="false">
 
-  <div class="side-panel">
-    <div class="panel-box">
-      <h3>Score</h3>
-      <div class="value" id="score">0</div>
+    <label>Notion 데이터베이스 ID</label>
+    <input type="text" id="notionDbId" placeholder="32자리 또는 전체 URL" autocomplete="off" spellcheck="false">
+
+    <label>Slack Bot Token</label>
+    <input type="password" id="slackToken" placeholder="xoxb-..." autocomplete="off" spellcheck="false">
+
+    <label>Slack 채널 ID</label>
+    <input type="text" id="slackChannel" placeholder="C087JL55TA6" autocomplete="off" spellcheck="false">
+
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="saveSettings()">💾 저장</button>
+      <button class="btn btn-ghost" onclick="testConnection()">🔗 연결 테스트</button>
     </div>
+    <div class="status" id="settingsStatus"></div>
 
-    <div class="panel-box">
-      <h3>Level</h3>
-      <div class="value" id="level">1</div>
-    </div>
-
-    <div class="panel-box">
-      <h3>Lines</h3>
-      <div class="value" id="lines">0</div>
-    </div>
-
-    <div class="panel-box">
-      <h3>Next</h3>
-      <canvas id="preview" width="120" height="120"></canvas>
-    </div>
-
-    <button id="startBtn">START</button>
-
-    <div class="panel-box controls">
-      <kbd>←</kbd> <kbd>→</kbd> 이동<br>
-      <kbd>↑</kbd> 회전<br>
-      <kbd>↓</kbd> 소프트 드롭<br>
-      <kbd>Space</kbd> 하드 드롭<br>
-      <kbd>P</kbd> 일시정지
+    <div class="proxy-note">
+      🛡️ Notion API는 브라우저 직접 호출 시 CORS 제한이 있어 <strong>corsproxy.io</strong>를 경유합니다.
+      API 키는 이 기기에만 저장되며 외부로 직접 전송되지 않습니다.
     </div>
   </div>
 </div>
 
+<!-- 날짜 & 조회 -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">📅 조회</span>
+  </div>
+  <div class="row">
+    <input type="date" id="targetDate">
+    <button class="btn btn-ghost" onclick="setToday()" style="padding:11px 14px;width:auto">오늘</button>
+  </div>
+  <button class="btn btn-primary" onclick="fetchData()" id="fetchBtn" style="margin-top:10px">
+    🔍 데이터 조회
+  </button>
+  <div class="status" id="fetchStatus"></div>
+</div>
+
+<!-- 미리보기 & 전송 -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">👁️ 미리보기 <span class="badge" id="countBadge">-</span></span>
+  </div>
+  <div class="tabs">
+    <div class="tab on" onclick="switchTab(0)">목록</div>
+    <div class="tab" onclick="switchTab(1)">메시지</div>
+  </div>
+  <div class="tab-pane on" id="pane0">
+    <div class="empty" id="emptyMsg">데이터를 먼저 조회하세요</div>
+    <div id="listView"></div>
+  </div>
+  <div class="tab-pane" id="pane1">
+    <div class="msg-box" id="msgPreview"><span style="color:var(--muted)">데이터를 먼저 조회하세요</span></div>
+  </div>
+  <button class="btn btn-success" onclick="sendToSlack()" id="sendBtn" disabled style="margin-top:12px">
+    📤 Slack으로 전송
+  </button>
+  <div class="status" id="sendStatus"></div>
+</div>
+
+<footer>API 키는 브라우저 localStorage에만 저장됩니다</footer>
+
 <script>
-const COLS = 10;
-const ROWS = 20;
-const BLOCK = 30;
-const COLORS = [
-  null,
-  '#00f0f0', // I - cyan
-  '#f0f000', // O - yellow
-  '#a000f0', // T - purple
-  '#00f000', // S - green
-  '#f00000', // Z - red
-  '#0000f0', // J - blue
-  '#f0a000', // L - orange
-];
+// ─── 상수 ──────────────────────────────────────────────────────────
+const PROXY = 'https://corsproxy.io/?';
+const NOTION_VERSION = '2022-06-28';
+const LEAVE_TYPES = ['연차', '반차', '휴가', '대체', '결근', '공가', '조퇴', '지각', '외출'];
+const NAME_KEYS = ['이름', '직원명', 'Name', '성명', '이름(Name)'];
+const ROLE_KEYS = ['직종', '직책', '구분', 'Role', '직위'];
+const STATUS_KEYS = ['상태', '근무상태', '출근여부', 'Status', '근태'];
+const TIME_KEYS = ['근무시간', '시간', '출근시간', '근무시작', '근무종료', '시간대'];
+const CENTER_KEYS = ['센터', '지점', '소속', 'Center', '지점명'];
+const DATE_KEYS = ['날짜', 'Date', '근무날짜', '일자'];
 
-const SHAPES = [
-  [],
-  [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
-  [[2,2],[2,2]],                                // O
-  [[0,3,0],[3,3,3],[0,0,0]],                    // T
-  [[0,4,4],[4,4,0],[0,0,0]],                    // S
-  [[5,5,0],[0,5,5],[0,0,0]],                    // Z
-  [[6,0,0],[6,6,6],[0,0,0]],                    // J
-  [[0,0,7],[7,7,7],[0,0,0]],                    // L
-];
+let state = { items: null, dateStr: null };
 
-const canvas = document.getElementById('board');
-const ctx = canvas.getContext('2d');
-const previewCanvas = document.getElementById('preview');
-const previewCtx = previewCanvas.getContext('2d');
-
-let board, piece, nextPiece, score, lines, level, gameOver, paused, animId, dropCounter, dropInterval, lastTime;
-
-function createBoard() {
-  return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
-}
-
-function rotate(matrix) {
-  const N = matrix.length;
-  const result = matrix.map((row, i) => row.map((_, j) => matrix[N - 1 - j][i]));
-  return result;
-}
-
-function createPiece(type) {
-  return {
-    shape: SHAPES[type].map(row => [...row]),
-    type,
-    x: Math.floor(COLS / 2) - Math.ceil(SHAPES[type][0].length / 2),
-    y: 0,
-  };
-}
-
-function randomType() {
-  return Math.floor(Math.random() * 7) + 1;
-}
-
-function collides(board, piece) {
-  for (let r = 0; r < piece.shape.length; r++) {
-    for (let c = 0; c < piece.shape[r].length; c++) {
-      if (piece.shape[r][c]) {
-        const nx = piece.x + c;
-        const ny = piece.y + r;
-        if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
-        if (ny >= 0 && board[ny][nx]) return true;
-      }
-    }
+// ─── 초기화 ────────────────────────────────────────────────────────
+(function init() {
+  setToday();
+  loadSettings();
+  // 설정이 있으면 자동 접기
+  if (localStorage.getItem('nsa_notionToken')) {
+    toggleSettings(true);
   }
-  return false;
+})();
+
+function setToday() {
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  document.getElementById('targetDate').value = now.toISOString().slice(0, 10);
 }
 
-function merge(board, piece) {
-  piece.shape.forEach((row, r) => {
-    row.forEach((val, c) => {
-      if (val) {
-        const y = piece.y + r;
-        if (y >= 0) board[y][piece.x + c] = val;
-      }
-    });
+function loadSettings() {
+  ['notionToken', 'notionDbId', 'slackToken', 'slackChannel'].forEach(k => {
+    const v = localStorage.getItem('nsa_' + k);
+    if (v) document.getElementById(k).value = v;
   });
 }
 
-function clearLines() {
-  let cleared = 0;
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r].every(cell => cell !== 0)) {
-      board.splice(r, 1);
-      board.unshift(new Array(COLS).fill(0));
-      cleared++;
-      r++;
+function saveSettings() {
+  ['notionToken', 'notionDbId', 'slackToken', 'slackChannel'].forEach(k => {
+    localStorage.setItem('nsa_' + k, document.getElementById(k).value.trim());
+  });
+  showStatus('settingsStatus', 'ok', '✅ 저장되었습니다');
+}
+
+let settingsOpen = true;
+function toggleSettings(forceClose) {
+  settingsOpen = forceClose !== undefined ? !forceClose : !settingsOpen;
+  const body = document.getElementById('settingsBody');
+  const btn = document.getElementById('settingsToggle');
+  body.style.maxHeight = settingsOpen ? body.scrollHeight + 'px' : '0';
+  body.classList.toggle('closed', !settingsOpen);
+  btn.textContent = settingsOpen ? '접기' : '펼치기';
+}
+
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('on', i === idx));
+  document.querySelectorAll('.tab-pane').forEach((p, i) => p.classList.toggle('on', i === idx));
+}
+
+// ─── 상태 표시 ─────────────────────────────────────────────────────
+function showStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'status show ' + type;
+  el.innerHTML = type === 'load' ? `<span class="spinner"></span>${msg}` : msg;
+}
+function hideStatus(id) {
+  document.getElementById(id).className = 'status';
+}
+
+// ─── Notion API 호출 ───────────────────────────────────────────────
+function getVal(id) { return (document.getElementById(id).value || '').trim(); }
+
+function cleanDbId(raw) {
+  // URL 형식이면 ID만 추출
+  const m = raw.match(/([a-f0-9]{32})/i) || raw.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);
+  return m ? m[1].replace(/-/g, '') : raw.replace(/-/g, '');
+}
+
+async function notionFetch(path, options = {}) {
+  const token = getVal('notionToken');
+  const url = PROXY + encodeURIComponent('https://api.notion.com' + path);
+  const resp = await fetch(url, {
+    method: options.method || 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Notion-Version': NOTION_VERSION,
+      'Content-Type': 'application/json',
+    },
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${resp.status}`);
+  }
+  return resp.json();
+}
+
+// ─── 연결 테스트 ───────────────────────────────────────────────────
+async function testConnection() {
+  const token = getVal('notionToken');
+  const dbId = getVal('notionDbId');
+  if (!token || !dbId) {
+    showStatus('settingsStatus', 'err', '⚠️ 토큰과 DB ID를 모두 입력하세요');
+    return;
+  }
+  showStatus('settingsStatus', 'load', 'Notion 연결 확인 중...');
+  try {
+    const cleanId = cleanDbId(dbId);
+    const db = await notionFetch(`/v1/databases/${cleanId}`);
+    const props = Object.keys(db.properties || {}).join(', ');
+    showStatus('settingsStatus', 'ok', `✅ 연결 성공\n속성: ${props}`);
+  } catch (e) {
+    showStatus('settingsStatus', 'err', `❌ 연결 실패: ${e.message}`);
+  }
+}
+
+// ─── 데이터 조회 ───────────────────────────────────────────────────
+async function fetchData() {
+  const token = getVal('notionToken');
+  const dbId = getVal('notionDbId');
+  const dateStr = getVal('targetDate');
+
+  if (!token || !dbId) {
+    showStatus('fetchStatus', 'err', '⚠️ 설정에서 Notion 토큰과 DB ID를 먼저 입력하세요');
+    return;
+  }
+  if (!dateStr) {
+    showStatus('fetchStatus', 'err', '⚠️ 날짜를 선택하세요');
+    return;
+  }
+
+  document.getElementById('fetchBtn').disabled = true;
+  showStatus('fetchStatus', 'load', '노션에서 데이터 조회 중...');
+
+  try {
+    const cleanId = cleanDbId(dbId);
+
+    // 먼저 DB 스키마로 날짜 속성 이름 찾기
+    const db = await notionFetch(`/v1/databases/${cleanId}`);
+    const propDefs = db.properties || {};
+    const propNames = Object.keys(propDefs);
+
+    // 날짜 속성 자동 탐지
+    const dateProp = propNames.find(n => DATE_KEYS.includes(n))
+      || propNames.find(n => propDefs[n].type === 'date');
+
+    let body = { page_size: 100 };
+    if (dateProp) {
+      body.filter = { property: dateProp, date: { equals: dateStr } };
     }
-  }
-  if (cleared > 0) {
-    const points = [0, 100, 300, 500, 800];
-    score += points[cleared] * level;
-    lines += cleared;
-    level = Math.floor(lines / 10) + 1;
-    dropInterval = Math.max(100, 1000 - (level - 1) * 80);
-    updateUI();
-  }
-}
 
-function updateUI() {
-  document.getElementById('score').textContent = score;
-  document.getElementById('level').textContent = level;
-  document.getElementById('lines').textContent = lines;
-}
-
-function drawBlock(ctx, x, y, colorIdx, size) {
-  const color = COLORS[colorIdx];
-  ctx.fillStyle = color;
-  ctx.fillRect(x * size, y * size, size, size);
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x * size, y * size, size, size);
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.fillRect(x * size + 2, y * size + 2, size / 3, size / 3);
-}
-
-function drawBoard() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-  ctx.lineWidth = 1;
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      ctx.strokeRect(c * BLOCK, r * BLOCK, BLOCK, BLOCK);
-    }
-  }
-
-  // placed blocks
-  board.forEach((row, r) => {
-    row.forEach((val, c) => {
-      if (val) drawBlock(ctx, c, r, val, BLOCK);
+    const result = await notionFetch(`/v1/databases/${cleanId}/query`, {
+      method: 'POST',
+      body,
     });
+
+    const items = (result.results || []).map(page => {
+      const out = { _id: page.id };
+      for (const [key, val] of Object.entries(page.properties || {})) {
+        out[key] = extractPropText(val);
+      }
+      return out;
+    });
+
+    state = { items, dateStr };
+
+    renderList(items, propNames);
+    renderMessage(items, dateStr, propNames);
+    document.getElementById('countBadge').textContent = items.length + '건';
+    document.getElementById('sendBtn').disabled = items.length === 0;
+
+    const note = !dateProp ? ' (날짜 필터 없이 전체 조회됨)' : '';
+    showStatus('fetchStatus', 'ok', `✅ ${items.length}건 조회 완료${note}`);
+  } catch (e) {
+    showStatus('fetchStatus', 'err', `❌ 오류: ${e.message}`);
+    state = { items: null, dateStr: null };
+    document.getElementById('sendBtn').disabled = true;
+  }
+
+  document.getElementById('fetchBtn').disabled = false;
+}
+
+function extractPropText(prop) {
+  if (!prop) return '';
+  switch (prop.type) {
+    case 'title': return (prop.title || []).map(t => t.plain_text).join('');
+    case 'rich_text': return (prop.rich_text || []).map(t => t.plain_text).join('');
+    case 'select': return prop.select?.name || '';
+    case 'multi_select': return (prop.multi_select || []).map(s => s.name).join(', ');
+    case 'date': return prop.date?.start || '';
+    case 'number': return prop.number != null ? String(prop.number) : '';
+    case 'checkbox': return prop.checkbox ? '근무' : '';
+    case 'phone_number': return prop.phone_number || '';
+    case 'email': return prop.email || '';
+    case 'url': return prop.url || '';
+    case 'people': return (prop.people || []).map(p => p.name || '').join(', ');
+    case 'formula': return prop.formula?.string || (prop.formula?.number != null ? String(prop.formula.number) : '');
+    default: return '';
+  }
+}
+
+// ─── 목록 렌더 ─────────────────────────────────────────────────────
+function renderList(items, propNames) {
+  const listEl = document.getElementById('listView');
+  const emptyEl = document.getElementById('emptyMsg');
+
+  if (!items.length) {
+    emptyEl.textContent = '해당 날짜의 데이터가 없습니다';
+    emptyEl.style.display = '';
+    listEl.innerHTML = '';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  const nameKey = propNames.find(n => NAME_KEYS.includes(n)) || propNames[0];
+  const roleKey = propNames.find(n => ROLE_KEYS.includes(n));
+  const statusKey = propNames.find(n => STATUS_KEYS.includes(n));
+  const timeKey = propNames.find(n => TIME_KEYS.includes(n));
+
+  listEl.innerHTML = items.map(item => {
+    const name = item[nameKey] || '-';
+    const role = roleKey ? item[roleKey] : '';
+    const status = statusKey ? item[statusKey] : '';
+    const time = timeKey ? item[timeKey] : '';
+    const isLeave = LEAVE_TYPES.some(t => status.includes(t));
+
+    const meta = [role, time].filter(Boolean).join(' · ');
+    const badgeText = status || (isLeave ? '휴가' : '근무');
+
+    return `<div class="list-item">
+      <div>
+        <div class="item-name">${escHtml(name)}</div>
+        ${meta ? `<div class="item-meta">${escHtml(meta)}</div>` : ''}
+      </div>
+      <div class="item-badge ${isLeave ? 'leave' : ''}">${escHtml(badgeText)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── 메시지 포맷 ───────────────────────────────────────────────────
+function buildMessage(items, dateStr, propNames) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const dateDisplay = `${d.getFullYear()}년 ${String(d.getMonth()+1).padStart(2,'0')}월 ${String(d.getDate()).padStart(2,'0')}일`;
+
+  if (!items.length) return `📋 *근무일정 현황* (${dateDisplay})\n\n데이터 없음`;
+
+  const nameKey = propNames.find(n => NAME_KEYS.includes(n)) || propNames[0];
+  const roleKey = propNames.find(n => ROLE_KEYS.includes(n));
+  const statusKey = propNames.find(n => STATUS_KEYS.includes(n));
+  const timeKey = propNames.find(n => TIME_KEYS.includes(n));
+  const centerKey = propNames.find(n => CENTER_KEYS.includes(n));
+
+  // 센터 속성 있으면 그룹화
+  if (centerKey) {
+    const groups = {};
+    items.forEach(item => {
+      const center = item[centerKey] || '기타';
+      if (!groups[center]) groups[center] = { working: [], leave: [] };
+      const status = statusKey ? item[statusKey] : '';
+      if (LEAVE_TYPES.some(t => status.includes(t))) groups[center].leave.push(item);
+      else groups[center].working.push(item);
+    });
+
+    let totalW = 0;
+    const sections = Object.entries(groups).map(([cname, g]) => {
+      totalW += g.working.length;
+      let line = `*🏢 ${cname}*\n`;
+      line += `• 당일 근무: *${g.working.length}명* / 총 ${g.working.length + g.leave.length}명`;
+      if (g.leave.length > 0) {
+        const lc = {};
+        g.leave.forEach(l => { const s = statusKey ? l[statusKey] : '휴가'; lc[s] = (lc[s]||0)+1; });
+        line += ` (${Object.entries(lc).map(([t,c]) => `${t} ${c}명`).join(', ')})`;
+      }
+      // 근무자 목록
+      if (g.working.length > 0) {
+        line += '\n' + g.working.map(w => {
+          const name = w[nameKey] || '-';
+          const role = roleKey ? w[roleKey] : '';
+          const time = timeKey ? w[timeKey] : '';
+          return `  • ${name}${role ? ` (${role})` : ''}${time ? ` [${time}]` : ''}`;
+        }).join('\n');
+      }
+      return line;
+    });
+
+    return `📋 *근무일정 현황* (${dateDisplay})\n\n━━━━━━━━━━━━━━━━\n\n${sections.join('\n\n')}\n\n━━━━━━━━━━━━━━━━\n*합계: 당일 근무 ${totalW}명 / 총 ${items.length}명*`;
+  }
+
+  // 단순 목록 형식
+  const working = [], leave = [];
+  items.forEach(item => {
+    const status = statusKey ? item[statusKey] : '';
+    if (LEAVE_TYPES.some(t => status.includes(t))) leave.push(item);
+    else working.push(item);
   });
 
-  // ghost
-  if (piece) {
-    const ghost = { ...piece, shape: piece.shape.map(r => [...r]) };
-    while (!collides(board, { ...ghost, y: ghost.y + 1, shape: ghost.shape })) ghost.y++;
-    ghost.shape.forEach((row, r) => {
-      row.forEach((val, c) => {
-        if (val) {
-          ctx.fillStyle = 'rgba(255,255,255,0.08)';
-          ctx.fillRect((ghost.x + c) * BLOCK, (ghost.y + r) * BLOCK, BLOCK, BLOCK);
-          ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-          ctx.strokeRect((ghost.x + c) * BLOCK, (ghost.y + r) * BLOCK, BLOCK, BLOCK);
-        }
-      });
+  let msg = `📋 *근무일정 현황* (${dateDisplay})\n\n`;
+  msg += `• 당일 근무: *${working.length}명* / 총 ${items.length}명\n`;
+
+  if (working.length > 0) {
+    msg += '\n*근무자 명단*\n';
+    msg += working.map(item => {
+      const name = item[nameKey] || '-';
+      const role = roleKey ? item[roleKey] : '';
+      const time = timeKey ? item[timeKey] : '';
+      return `• ${name}${role ? ` (${role})` : ''}${time ? ` [${time}]` : ''}`;
+    }).join('\n');
+  }
+
+  if (leave.length > 0) {
+    msg += '\n\n🏖️ *휴가*\n';
+    msg += leave.map(item => {
+      const name = item[nameKey] || '-';
+      const status = statusKey ? item[statusKey] : '휴가';
+      return `• ${name} — ${status}`;
+    }).join('\n');
+  }
+
+  return msg;
+}
+
+function renderMessage(items, dateStr, propNames) {
+  document.getElementById('msgPreview').textContent = buildMessage(items, dateStr, propNames);
+}
+
+// ─── Slack 전송 ────────────────────────────────────────────────────
+async function sendToSlack() {
+  const slackToken = getVal('slackToken');
+  const channel = getVal('slackChannel');
+
+  if (!slackToken || !channel) {
+    showStatus('sendStatus', 'err', '⚠️ 설정에서 Slack 토큰과 채널 ID를 입력하세요');
+    return;
+  }
+  if (!state.items) {
+    showStatus('sendStatus', 'err', '⚠️ 먼저 데이터를 조회하세요');
+    return;
+  }
+
+  document.getElementById('sendBtn').disabled = true;
+  showStatus('sendStatus', 'load', 'Slack 전송 중...');
+
+  // 속성 이름 목록 복원
+  const propNames = state.items.length > 0
+    ? Object.keys(state.items[0]).filter(k => !k.startsWith('_'))
+    : [];
+
+  const text = buildMessage(state.items, state.dateStr, propNames);
+
+  try {
+    const resp = await fetch('https://slack.com/api/chat.postMessage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer ' + slackToken,
+      },
+      body: JSON.stringify({ channel, text }),
     });
+    const result = await resp.json();
+    if (result.ok) {
+      showStatus('sendStatus', 'ok', '✅ Slack 전송 완료!');
+    } else {
+      showStatus('sendStatus', 'err', `❌ 전송 실패: ${result.error}`);
+    }
+  } catch (e) {
+    showStatus('sendStatus', 'err', `❌ 오류: ${e.message}`);
   }
 
-  // current piece
-  if (piece) {
-    piece.shape.forEach((row, r) => {
-      row.forEach((val, c) => {
-        if (val && piece.y + r >= 0) {
-          drawBlock(ctx, piece.x + c, piece.y + r, val, BLOCK);
-        }
-      });
-    });
-  }
+  document.getElementById('sendBtn').disabled = false;
 }
 
-function drawPreview() {
-  previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-  if (!nextPiece) return;
-  const shape = SHAPES[nextPiece];
-  const size = 24;
-  const offsetX = (previewCanvas.width - shape[0].length * size) / 2;
-  const offsetY = (previewCanvas.height - shape.length * size) / 2;
-  shape.forEach((row, r) => {
-    row.forEach((val, c) => {
-      if (val) {
-        previewCtx.fillStyle = COLORS[val];
-        previewCtx.fillRect(offsetX + c * size, offsetY + r * size, size, size);
-        previewCtx.strokeStyle = 'rgba(255,255,255,0.15)';
-        previewCtx.strokeRect(offsetX + c * size, offsetY + r * size, size, size);
-        previewCtx.fillStyle = 'rgba(255,255,255,0.12)';
-        previewCtx.fillRect(offsetX + c * size + 2, offsetY + r * size + 2, size / 3, size / 3);
-      }
-    });
-  });
+// ─── 유틸 ──────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
-function spawnPiece() {
-  const type = nextPiece || randomType();
-  nextPiece = randomType();
-  piece = createPiece(type);
-  drawPreview();
-  if (collides(board, piece)) {
-    gameOver = true;
-    document.getElementById('overlay').textContent = 'GAME OVER';
-    document.getElementById('overlay').style.display = 'flex';
-    cancelAnimationFrame(animId);
-  }
-}
-
-function drop() {
-  piece.y++;
-  if (collides(board, piece)) {
-    piece.y--;
-    merge(board, piece);
-    clearLines();
-    spawnPiece();
-  }
-}
-
-function hardDrop() {
-  while (!collides(board, { ...piece, y: piece.y + 1, shape: piece.shape })) {
-    piece.y++;
-    score += 2;
-  }
-  merge(board, piece);
-  clearLines();
-  updateUI();
-  spawnPiece();
-}
-
-function move(dir) {
-  piece.x += dir;
-  if (collides(board, piece)) piece.x -= dir;
-}
-
-function rotatePiece() {
-  const original = piece.shape;
-  piece.shape = rotate(piece.shape);
-  // wall kick
-  const kicks = [0, 1, -1, 2, -2];
-  let valid = false;
-  for (const kick of kicks) {
-    piece.x += kick;
-    if (!collides(board, piece)) { valid = true; break; }
-    piece.x -= kick;
-  }
-  if (!valid) piece.shape = original;
-}
-
-function update(time = 0) {
-  if (gameOver || paused) return;
-  const delta = time - lastTime;
-  lastTime = time;
-  dropCounter += delta;
-  if (dropCounter >= dropInterval) {
-    drop();
-    dropCounter = 0;
-  }
-  drawBoard();
-  animId = requestAnimationFrame(update);
-}
-
-function startGame() {
-  board = createBoard();
-  score = 0; lines = 0; level = 1;
-  dropCounter = 0; dropInterval = 1000; lastTime = 0;
-  gameOver = false; paused = false;
-  nextPiece = null;
-  updateUI();
-  spawnPiece();
-  document.getElementById('overlay').style.display = 'none';
-  cancelAnimationFrame(animId);
-  animId = requestAnimationFrame(update);
-}
-
-document.addEventListener('keydown', e => {
-  if (gameOver && e.key !== 'Enter') return;
-  if (e.key === 'Enter' && gameOver) { startGame(); return; }
-
-  switch (e.key) {
-    case 'ArrowLeft':  if (!paused) move(-1); e.preventDefault(); break;
-    case 'ArrowRight': if (!paused) move(1); e.preventDefault(); break;
-    case 'ArrowDown':  if (!paused) { drop(); score += 1; updateUI(); } e.preventDefault(); break;
-    case 'ArrowUp':    if (!paused) rotatePiece(); e.preventDefault(); break;
-    case ' ':          if (!paused) hardDrop(); e.preventDefault(); break;
-    case 'p': case 'P':
-      if (!gameOver) {
-        paused = !paused;
-        if (paused) {
-          document.getElementById('overlay').textContent = 'PAUSED';
-          document.getElementById('overlay').style.display = 'flex';
-        } else {
-          document.getElementById('overlay').style.display = 'none';
-          lastTime = performance.now();
-          animId = requestAnimationFrame(update);
-        }
-      }
-      break;
-  }
-});
-
-document.getElementById('startBtn').addEventListener('click', startGame);
-
-// initial draw
-drawBoard();
-drawPreview();
 </script>
 </body>
 </html>
