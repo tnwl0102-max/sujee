@@ -33,6 +33,11 @@ async function fetchTasks() {
     sorts: [{ property: '마감일', direction: 'ascending' }],
   });
 
+  if (!result.results) {
+    console.error('Notion API 응답 오류:', JSON.stringify(result));
+    throw new Error(result.message || 'Notion API 오류');
+  }
+
   return result.results.map(page => {
     const props = page.properties;
     const title = props['업무명']?.title?.[0]?.plain_text || '(제목 없음)';
