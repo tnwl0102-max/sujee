@@ -29,7 +29,6 @@ async function fetchTasks() {
       'Content-Type': 'application/json',
     },
   }, {
-    filter: { property: '상태', select: { does_not_equal: '완료' } },
     sorts: [{ property: '마감일', direction: 'ascending' }],
   });
 
@@ -41,12 +40,12 @@ async function fetchTasks() {
   return result.results.map(page => {
     const props = page.properties;
     const title = props['업무명']?.title?.[0]?.plain_text || '(제목 없음)';
-    const status = props['상태']?.select?.name || '미시작';
+    const status = props['상태']?.select?.name || props['상태']?.rich_text?.[0]?.plain_text || '미시작';
     const dueDate = props['마감일']?.date?.start || null;
-    const priority = props['우선순위']?.select?.name || '보통';
+    const priority = props['우선순위']?.select?.name || props['우선순위']?.rich_text?.[0]?.plain_text || '보통';
     const memo = props['메모']?.rich_text?.[0]?.plain_text || '';
     return { title, status, dueDate, priority, memo };
-  });
+  }).filter(t => t.status !== '완료');
 }
 
 function calcDDay(dateStr) {
