@@ -2,7 +2,7 @@ name: 업무 체크리스트 슬랙 브리핑
 
 on:
   schedule:
-    - cron: '30 23 * * 0-4'  # 월~금 08:30 KST (UTC 전날 23:30)
+    - cron: '0 23 * * 0-4'  # 월~금 08:00 KST (UTC 전날 23:00)
   workflow_dispatch:
 
 jobs:
