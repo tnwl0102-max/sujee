@@ -1,10 +1,7 @@
 name: 충청본부 근무일정 Slack 보고
 
 on:
-  schedule:
-    # 월~토 오전 8시 KST (= UTC 23:00 전날)
-    - cron: '0 23 * * 0-5'
-  workflow_dispatch: # 수동 실행 가능
+  workflow_dispatch: # cron-job.org에서 매일 8시 KST에 트리거
 
 jobs:
   daily-report:
