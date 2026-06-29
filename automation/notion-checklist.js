@@ -107,7 +107,7 @@ async function sendSlack(text) {
       'Authorization': `Bearer ${SLACK_BOT_TOKEN}`,
       'Content-Type': 'application/json',
     },
-  }, { channel: SLACK_CHANNEL, text });
+  }, { channel: SLACK_CHANNEL, text, username: 'SUJEE_봇' });
 }
 
 async function main() {
