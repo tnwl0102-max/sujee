@@ -1,9 +1,7 @@
 name: 업무 체크리스트 슬랙 브리핑
 
 on:
-  schedule:
-    - cron: '0 23 * * 0-4'  # 월~금 08:00 KST (UTC 전날 23:00)
-  workflow_dispatch:
+  workflow_dispatch: # cron-job.org에서 매일 8시 KST에 트리거
 
 jobs:
   checklist:
