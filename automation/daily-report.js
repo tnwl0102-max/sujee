@@ -123,19 +123,37 @@ async function collectCenterData(context, center, todayInfo) {
 
     const staffData = await page.evaluate(() => {
       const t = document.getElementById('staff_list_table');
-      if (!t) return [];
-      return Array.from(t.querySelectorAll('tbody tr')).map(r => {
+      if (!t) return { headers: [], rows: [] };
+      const headers = Array.from(t.querySelectorAll('thead th, thead td')).map(h => h.textContent.trim());
+      const rows = Array.from(t.querySelectorAll('tbody tr')).map(r => {
         const c = r.querySelectorAll('td');
-        if (c.length < 6) return null;
-        const no = c[1]?.textContent?.trim();
-        if (!no || isNaN(parseInt(no))) return null;
-        const name = c[2]?.textContent?.trim();
-        const role = c[3]?.textContent?.trim();
-        const wh = parseFloat(c[5]?.textContent?.trim()) || 0;
-        const drv = role.includes('운전사');
-        return { name, role, workHours: wh, isDriver: drv, overtime: Math.round((wh - (drv ? todayInfo.driverStdHours : todayInfo.stdHours)) * 10) / 10 };
-      }).filter(Boolean);
+        return Array.from(c).map(td => td.textContent.trim());
+      });
+      return { headers, rows };
     });
+
+    console.log(`  [${center.name}] 테이블 헤더:`, JSON.stringify(staffData.headers));
+
+    const hdrs = staffData.headers.map(h => h.replace(/\s+/g, ''));
+    const stdIdx = hdrs.findIndex(h => h.includes('기준근무'));
+    const whIdx = hdrs.findIndex(h => h.includes('공단근무인정') || h.includes('인정시간'));
+    const nameIdx = hdrs.findIndex(h => h.includes('직원명') || h.includes('이름'));
+    const roleIdx = hdrs.findIndex(h => h.includes('담당직종') || h.includes('직종'));
+    const noIdx = hdrs.findIndex(h => h.includes('번호'));
+
+    console.log(`  [${center.name}] 컬럼 인덱스 — 번호:${noIdx} 이름:${nameIdx} 직종:${roleIdx} 기준근무:${stdIdx} 공단시간:${whIdx}`);
+
+    const parsedStaff = staffData.rows.map(cols => {
+      const no = cols[noIdx >= 0 ? noIdx : 1];
+      if (!no || isNaN(parseInt(no))) return null;
+      const name = cols[nameIdx >= 0 ? nameIdx : 2];
+      const role = cols[roleIdx >= 0 ? roleIdx : 3];
+      const wh = parseFloat(cols[whIdx >= 0 ? whIdx : 5]) || 0;
+      const std = stdIdx >= 0 ? (parseFloat(cols[stdIdx]) || 0) : 0;
+      const drv = role.includes('운전사');
+      const overtime = std > 0 ? Math.round((wh - std) * 10) / 10 : Math.round((wh - (drv ? todayInfo.driverStdHours : todayInfo.stdHours)) * 10) / 10;
+      return { name, role, workHours: wh, isDriver: drv, overtime, stdHours: std };
+    }).filter(Boolean);
 
     await page.evaluate((ds) => {
       const cell = document.getElementById('staffWorkPlanCalendarTbl')?.querySelector(`td[data-key="${ds}"]`);
@@ -150,7 +168,7 @@ async function collectCenterData(context, center, todayInfo) {
     const dailyStaff = parseDailyModal(modalText);
 
     await page.close();
-    return { center: center.name, staffData, dailyStaff };
+    return { center: center.name, staffData: parsedStaff, dailyStaff };
   } catch (e) {
     console.error(`[${center.name}] Error:`, e.message);
     await page.close().catch(() => {});
