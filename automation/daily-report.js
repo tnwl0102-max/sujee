@@ -16,7 +16,6 @@ const CAREFOR_LOGIN_ID = process.env.CAREFOR_LOGIN_ID || '관리자';
 const CAREFOR_LOGIN_PASS = process.env.CAREFOR_LOGIN_PASS || 'zpdjfld1!';
 
 const GOOGLE_SHEET_ID = '1Ns2HzBXbK2nCQuPhpO49KSr7Oyo5f5OgGLz4hvnueP8';
-const GOOGLE_SHEET_GID = '1190101526';
 
 function getWeekdaysInMonth(year, month) {
   let count = 0;
@@ -273,9 +272,33 @@ function parseCSVLine(line) {
   return result;
 }
 
+async function findSheetGid(monthNum) {
+  const tabName = `${monthNum}월`;
+  const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit`;
+  const html = await fetchUrl(url);
+  const regex = /"sheetId"\s*:\s*(\d+)[\s\S]*?"title"\s*:\s*"([^"]+)"/g;
+  let match;
+  while ((match = regex.exec(html)) !== null) {
+    if (match[2] === tabName) return match[1];
+  }
+  const regex2 = /"title"\s*:\s*"([^"]+)"[\s\S]*?"sheetId"\s*:\s*(\d+)/g;
+  while ((match = regex2.exec(html)) !== null) {
+    if (match[1] === tabName) return match[2];
+  }
+  return null;
+}
+
 async function collectGoogleSheetData(todayInfo) {
-  const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=${GOOGLE_SHEET_GID}`;
   console.log('  [방문요양대전점] 구글시트 수집 중...');
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  const monthNum = now.getMonth() + 1;
+  const gid = await findSheetGid(monthNum);
+  if (!gid) {
+    console.error(`  [방문요양대전점] "${monthNum}월" 탭을 찾을 수 없음`);
+    return null;
+  }
+  console.log(`  [방문요양대전점] ${monthNum}월 탭 GID: ${gid}`);
+  const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=${gid}`;
   try {
     const csv = await fetchUrl(url);
     const rows = csv.split('\n').filter(r => r.trim());
