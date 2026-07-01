@@ -18,15 +18,32 @@ const CAREFOR_LOGIN_PASS = process.env.CAREFOR_LOGIN_PASS || 'zpdjfld1!';
 const GOOGLE_SHEET_ID = '1Ns2HzBXbK2nCQuPhpO49KSr7Oyo5f5OgGLz4hvnueP8';
 const GOOGLE_SHEET_GID = '1190101526';
 
+function getWeekdaysInMonth(year, month) {
+  let count = 0;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const day = new Date(year, month - 1, d).getDay();
+    if (day >= 1 && day <= 5) count++;
+  }
+  return count;
+}
+
 function getTodayInfo() {
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
   const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const month = now.getMonth() + 1;
+  const m = String(month).padStart(2, '0');
   const d = String(now.getDate()).padStart(2, '0');
+  const weekdays = getWeekdaysInMonth(y, month);
+  const stdHours = weekdays * 8;
+  const driverStdHours = weekdays * 4;
+  console.log(`[기준근무] ${y}년 ${m}월: 평일 ${weekdays}일 → 일반 ${stdHours}h / 운전사 ${driverStdHours}h`);
   return {
     dateStr: `${y}${m}${d}`,
     dateDisplay: `${y}년 ${m}월 ${d}일`,
     dayOfMonth: now.getDate(),
+    stdHours,
+    driverStdHours,
   };
 }
 
@@ -116,7 +133,7 @@ async function collectCenterData(context, center, todayInfo) {
         const role = c[3]?.textContent?.trim();
         const wh = parseFloat(c[5]?.textContent?.trim()) || 0;
         const drv = role.includes('운전사');
-        return { name, role, workHours: wh, isDriver: drv, overtime: Math.round((wh - (drv ? 84 : 168)) * 10) / 10 };
+        return { name, role, workHours: wh, isDriver: drv, overtime: Math.round((wh - (drv ? todayInfo.driverStdHours : todayInfo.stdHours)) * 10) / 10 };
       }).filter(Boolean);
     });
 
