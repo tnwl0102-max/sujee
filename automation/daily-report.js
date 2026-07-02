@@ -319,7 +319,7 @@ async function collectGoogleSheetData(todayInfo) {
       if (!name) continue;
 
       const role = cols[1] || '';
-      const stdHours = parseFloat(cols[2]) || 168;
+      const stdHours = parseFloat(cols[2]) || todayInfo.stdHours;
       const overtimeHours = parseFloat(cols[3]) || 0;
       const isDriver = role.includes('운전사');
       const todayVal = (cols[dayCol] || '').trim();
